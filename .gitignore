@@ -1,0 +1,6 @@
+build
+venv
+prof
+*.o
+*.so
+.cache

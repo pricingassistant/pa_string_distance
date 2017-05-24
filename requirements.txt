@@ -1,0 +1,6 @@
+Cython==0.25.2
+pytest==3.1.0
+pytest-profiling==1.2.6
+jellyfish==0.5.6
+Unidecode==0.04.20
+-e git+https://github.com/axiak/pyre2.git@89e0b255b793f57ab0a146c7f7b6f442ac019598#egg=pyre2
