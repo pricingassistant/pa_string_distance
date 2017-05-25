@@ -94,5 +94,11 @@ def test_string_compare():
     # Close string to an existing pair is preferred
     assert string_compare("words word", "words")["ratio"] > string_compare("words wxyz", "words")["ratio"]
 
+    # Repeats increase the matching score
+    assert string_compare("one one one one one two three four", "one two three")["ratio"] > string_compare("one two three four", "one two three")["ratio"]
+    assert string_compare("one one one one one two three four", "one one two three")["ratio"] > string_compare("one one one one one two three four", "one two three")["ratio"]
+
     # Special characters
     assert string_compare(u"K\xe4rcher", "KARCHER")["ratio"] > 0.95
+    assert string_compare(u'Thing \xd8 4,60 - 1,20m', u'Thing 4.60 , 1.20m')["ratio"] == 1
+    assert string_compare(u'G\xd8rdon', u'Gordon')["ratio"] == 1
