@@ -10,7 +10,7 @@ build: clean
 	cp build/lib*/*.so ./
 
 test: build
-	venv/bin/pytest test.py --profile
+	venv/bin/pytest test.py --profile -sv
 
 virtualenv:
 	rm -rf venv

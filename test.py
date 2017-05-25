@@ -79,8 +79,6 @@ def test_string_compare():
     assert 0 < string_compare("PG-38", "PG38 Other")["ratio"]
     assert string_compare("PG-38", "PG38 Other")["ratio"] < string_compare("PG38", "PG38 Other")["ratio"]
 
-    print string_compare("R20 Cabriolet", "R-20")
-    print string_compare("R20 Cabriolet", "R20")
     assert 0 < string_compare("R20 Cabriolet", "R-20")["ratio"]
     assert string_compare("R20 Cabriolet", "R-20")["ratio"] < string_compare("R20 Cabriolet", "R20")["ratio"]
 
@@ -92,3 +90,9 @@ def test_string_compare():
     # Also work by 3
     assert string_compare("Finish line leftover", "FinishlineLeftover")["ratio"] > string_compare("Finish Leopard Leftover", "FinishlineLeftover")["ratio"]
     assert string_compare("Finish line leftover", "FinishlineLeftover")["ratio"] > 0.8
+
+    # Close string to an existing pair is preferred
+    assert string_compare("words word", "words")["ratio"] > string_compare("words wxyz", "words")["ratio"]
+
+    # Special characters
+    assert string_compare(u"K\xe4rcher", "KARCHER")["ratio"] > 0.95

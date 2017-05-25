@@ -1,7 +1,7 @@
 # cython: profile=True
 
 from __future__ import division
-# from unidecode import unidecode
+from unidecode import unidecode
 import re2
 from itertools import combinations
 
@@ -10,7 +10,7 @@ cdef double jaro_winkler_ratio(s1, s2):
   u2 = unicode(s2)
   return jaro_winkler(u1, len(u1), u2, len(u2), 0)
 
-RE_SPLIT = re2.compile(r"[\-\s\.\!\,]")
+RE_SPLIT = re2.compile(r"(?:[^\w]|[_])+")
 RE_ISNUM = re2.compile(r"[0-9]")
 
 
@@ -29,7 +29,10 @@ def jaro(s1, s2):
     return norm(j, 0.85, 1, 0.01, 1)
 
 cdef tokenize(s):
-  return [x for x in RE_SPLIT.split(s.lower()) if x]
+  s = s.lower()
+  if type(s) == unicode:
+    s = unidecode(s)
+  return [x for x in RE_SPLIT.split(s) if x]
 
 cdef float w(tokens):
   """ Returns the weight of a list of tokens """
@@ -49,6 +52,8 @@ def pa_string_distance(str1, str2):
   tokens1 = tokenize(str1)
   tokens2 = tokenize(str2)
 
+  # print tokens1, tokens2
+
   if len(tokens1) == 0 or len(tokens2) == 0:
     return 1.0
 
@@ -60,6 +65,8 @@ def pa_string_distance(str1, str2):
 
   max_distance = weight1 + weight2
   cdef float distance = 0.0
+
+  # intersection = tokens1_set.intersection(tokens2_set)
 
   diff1 = set()
   diff1_num = set()
@@ -79,6 +86,9 @@ def pa_string_distance(str1, str2):
     else:
       diff2.add(t)
 
+  # print diff1, diff1_num
+  # print diff2, diff2_num
+
   cdef float diff1_weight = w(diff1)
   cdef float diff2_weight = w(diff2)
   cdef float diff1_num_weight = w(diff1_num)
@@ -92,12 +102,11 @@ def pa_string_distance(str1, str2):
   # By now, we have eliminated all the simple cases.
   # Compare the remainders with a few different methods and pick the lowest distance.
 
-  # 1: sorted diffs
-  # sorted1 = " ".join(sorted(diff1))
-  # sorted2 = " ".join(sorted(diff2))
+  # 1: smallest jaro distance in all the tokens of the other string
+  jaro1 = sum([min([1 - jaro(t1, t2) for t2 in tokens2_set]) * len(t1) for t1 in diff1])
+  jaro2 = sum([min([1 - jaro(t1, t2) for t1 in tokens1_set]) * len(t2) for t2 in diff2])
 
-  # weight = (1 - jaro(sorted1, sorted2)) * (diff1_weight + diff2_weight)
-  # distance_sorted = (distance + weight)
+  distance_crossproduct = (distance + jaro1 + jaro2)
 
   # 2: original order diffs
   original1 = reassemble(" ", tokens1, diff1)
@@ -114,4 +123,4 @@ def pa_string_distance(str1, str2):
   weight = (1 - jaro(originalnum1, originalnum2)) * coef
   cdef float distance_originalorderwithnum = min(weight + 0.01, coef)  # Add an additional fixed distance here to differentiate cases.
 
-  return min([distance_originalorder, distance_originalorderwithnum]) / max_distance
+  return min([distance_crossproduct, distance_originalorder, distance_originalorderwithnum]) / max_distance
