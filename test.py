@@ -102,3 +102,6 @@ def test_string_compare():
     assert string_compare(u"K\xe4rcher", "KARCHER")["ratio"] > 0.95
     assert string_compare(u'Thing \xd8 4,60 - 1,20m', u'Thing 4.60 , 1.20m')["ratio"] == 1
     assert string_compare(u'G\xd8rdon', u'Gordon')["ratio"] == 1
+
+    # If exactly 20% of the string matches, score should be ~= 0.2
+    assert 0.15 < string_compare("one two thr fou fiv", "one six sev eig ten")["ratio"] < 0.25
